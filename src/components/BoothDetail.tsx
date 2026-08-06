@@ -1,4 +1,5 @@
 import type { Booth } from '../types/booth'
+import { useImageUrl } from '../hooks/useImageStorage'
 
 interface Props {
   booth: Booth
@@ -9,11 +10,14 @@ interface Props {
 }
 
 export function BoothDetail({ booth, isFavorite, isVisited, onToggleFavorite, onToggleVisited }: Props) {
+  const menuUrl = useImageUrl(booth.menuImage)
   return (
     <aside className="detail-card" aria-labelledby="detail-title">
       <div className="detail-hero">
-        <div className="poster" aria-label={`${booth.circleName}のお品書き風プレースホルダー`}>
+        <div className="poster" aria-label={`${booth.circleName}のお品書き`}>
+          {menuUrl ? <img src={menuUrl} alt={booth.menuImage?.alt ?? ''} /> : <>
           <span>MENU</span><strong>{booth.boothNumber}</strong><i>{booth.genre}</i>
+          </>}
         </div>
         <div>
           <span className="area-chip">AREA {booth.area}</span>

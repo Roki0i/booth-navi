@@ -15,18 +15,20 @@ function readStorage(key: string): string[] {
 }
 
 export function usePersistentSet(key: string) {
-  const [ids, setIds] = useState<string[]>(() => readStorage(key))
+  const [state, setState] = useState(() => ({ key, ids: readStorage(key) }))
+  const ids = state.key === key ? state.ids : readStorage(key)
 
   const toggle = useCallback(
     (id: string) => {
-      setIds((current) => {
+      setState((currentState) => {
+        const current = currentState.key === key ? currentState.ids : readStorage(key)
         const next = toggleId(current, id)
         try {
           localStorage.setItem(key, JSON.stringify(next))
         } catch {
           // Keep the in-memory state when storage is unavailable.
         }
-        return next
+        return { key, ids: next }
       })
     },
     [key],

@@ -1,4 +1,4 @@
-export type Area = 'A' | 'B' | 'C' | 'D'
+export type Area = string
 
 export type ItemType = '新刊' | '既刊' | 'グッズ'
 
@@ -25,4 +25,10 @@ export interface Booth {
   paymentMethods: string[]
   xUrl: string
   shopUrl: string
+  menuImage?: ImageReference
+}
+
+export interface ImageReference {
+  id: string
+  alt: string
 }

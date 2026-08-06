@@ -48,10 +48,10 @@ export const booths: Booth[] = source.map(([boothNumber, circleName, genre, desc
     area,
     genre,
     description,
-    x: origin.x + (localIndex % 3) * 105,
-    y: origin.y + Math.floor(localIndex / 3) * 82,
-    width: 86,
-    height: 58,
+    x: ((origin.x + (localIndex % 3) * 105) / 900) * 100,
+    y: ((origin.y + Math.floor(localIndex / 3) * 82) / 700) * 100,
+    width: (86 / 900) * 100,
+    height: (58 / 700) * 100,
     items: [
       {
         id: `${safeId}-01`,
