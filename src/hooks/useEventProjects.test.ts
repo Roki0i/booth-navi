@@ -36,6 +36,14 @@ describe('イベント管理', () => {
     storage.setItem('booth-navi:event-projects', JSON.stringify([project]))
     expect(loadProjects(storage)[0].theme.mapStyle).toBe('light')
   })
+  it('localStorageの旧ブース情報を移行する', () => {
+    const storage = memoryStorage(), project = createSampleEvent('legacy-booth')
+    project.schemaVersion = 1
+    ;(project.booths[0] as unknown as Record<string, unknown>).paymentMethods = '現金'
+    delete (project.booths[0] as unknown as Record<string, unknown>).workCategory
+    storage.setItem('booth-navi:event-projects', JSON.stringify([project]))
+    expect(loadProjects(storage)[0].booths[0]).toMatchObject({ workCategory: 'original', paymentMethods: ['現金'] })
+  })
   it('お気に入り用保存キーをイベントごとに分離できる', () => {
     const storage = memoryStorage()
     storage.setItem('booth-navi:event-a:favorites', '["a01"]')

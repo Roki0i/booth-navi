@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calculateBoothScrollPosition, calculateFitZoom } from './mapFit'
+import { calculateBoothScrollPosition, calculateCenteredMapOffset, calculateFitZoom } from './mapFit'
 
 describe('calculateFitZoom', () => {
   it('横幅と縦幅のうち厳しい方へマップを収める', () => {
@@ -42,6 +42,19 @@ describe('calculateFitZoom', () => {
     const enlargedZoom = fitZoom + .25
     expect(enlargedZoom).toBeGreaterThan(fitZoom)
     expect(calculateFitZoom(390, 440, 900, 700)).toBe(fitZoom)
+  })
+})
+
+describe('calculateCenteredMapOffset', () => {
+  it('全体表示時の左右と上下の余白を均等にする', () => {
+    expect(calculateCenteredMapOffset(1000, 700, 900, 600, 0.8)).toEqual({
+      left: 140,
+      top: 110,
+    })
+  })
+
+  it('拡大して表示領域を超えた方向はスクロール原点を維持する', () => {
+    expect(calculateCenteredMapOffset(600, 500, 900, 700, 1)).toEqual({ left: 0, top: 0 })
   })
 })
 

@@ -4,19 +4,19 @@ const source: Array<[string, string, string, string]> = [
   ['A01', '星屑アトリエ', 'イラスト', '夜空をテーマにした静かな色彩の作品を制作しています。'],
   ['A02', '月灯り文庫', '創作小説', '不思議な街を巡る短編小説を集めました。'],
   ['A03', '空色パレット', 'イラスト', '透明感のある空と雲のイラスト作品です。'],
-  ['A04', 'ねじまき標本室', '雑貨', '空想生物をモチーフにした紙雑貨を頒布します。'],
+  ['A04', 'ねじまき標本室', '雑貨', '空想生物をモチーフにした紙雑貨を販売・配布します。'],
   ['A05', '雨音レコード', '音楽', '雨の日に似合う架空都市のインスト音楽です。'],
   ['A06', 'こもれび通信', 'エッセイ', '小さな旅と喫茶店についての文章をまとめました。'],
   ['B25', '銀河スケッチ', 'イラスト', '遠い惑星の暮らしを描くイラストサークルです。'],
   ['B26', '朝焼け製本所', '創作漫画', '印刷所で働く二人の日常漫画を制作しています。'],
-  ['B27', '薄荷ドロップ', '創作漫画', '爽やかで少し不思議な青春漫画を頒布します。'],
+  ['B27', '薄荷ドロップ', '創作漫画', '爽やかで少し不思議な青春漫画を販売・配布します。'],
   ['B28', '砂糖星図', '雑貨', '星座をイメージしたシールとカードがあります。'],
   ['B29', '旅する栞', '創作小説', '列車で巡る連作ファンタジー短編集です。'],
   ['B30', '水面工房', 'アクセサリー', '水面の光を表現した小さなアクセサリーです。'],
   ['C11', '白昼夢郵便局', '創作漫画', '夢を配達する郵便屋の物語を描いています。'],
   ['C12', '紺碧ラボ', '評論', '架空都市の看板や文字を観察する研究誌です。'],
   ['C13', '六角形の庭', 'ゲーム', '六角タイルで遊ぶ一人用アナログゲームです。'],
-  ['C14', '夜ふかし喫茶', '創作小説', '深夜喫茶を舞台にした掌編集を頒布します。'],
+  ['C14', '夜ふかし喫茶', '創作小説', '深夜喫茶を舞台にした掌編集を販売・配布します。'],
   ['C15', '風見鶏設計室', 'デザイン', '架空建築の図面と設定をまとめた作品集です。'],
   ['C16', 'ひだまり鉱石店', '雑貨', '空想鉱石の標本カードと小物を制作しています。'],
   ['D41', '青い余白', '写真', '街の余白を切り取った自作写真集です。'],
@@ -41,6 +41,10 @@ export const booths: Booth[] = source.map(([boothNumber, circleName, genre, desc
   const localIndex = index % 6
   const origin = areaOrigin[area]
   const safeId = boothNumber.toLowerCase()
+  const derivativeMedia = ['anime', 'manga', 'game'] as const
+  const workCategory = index === 13 || index === 23 ? 'review' : index % 5 === 1 ? 'derivative' : 'original'
+  const sourceMedia = workCategory === 'derivative' ? derivativeMedia[index % derivativeMedia.length] : null
+  const sourceTitles = { anime: '蒼空機巧譚', manga: '月灯りの旅人', game: '星巡りクエスト' }
   return {
     id: safeId,
     boothNumber,
@@ -48,6 +52,9 @@ export const booths: Booth[] = source.map(([boothNumber, circleName, genre, desc
     area,
     genre,
     description,
+    workCategory,
+    sourceMedia,
+    sourceTitle: sourceMedia ? sourceTitles[sourceMedia] : '',
     x: ((origin.x + (localIndex % 3) * 105) / 900) * 100,
     y: ((origin.y + Math.floor(localIndex / 3) * 82) / 700) * 100,
     width: (86 / 900) * 100,
@@ -58,7 +65,7 @@ export const booths: Booth[] = source.map(([boothNumber, circleName, genre, desc
         name: `${circleName} 新作集`,
         price: 800 + (index % 3) * 200,
         type: '新刊',
-        description: `${genre}の新作をまとめたイベント初頒布の一冊です。`,
+        description: `${genre}の新作をまとめたイベント初登場の一冊です。`,
       },
       {
         id: `${safeId}-02`,
@@ -69,6 +76,7 @@ export const booths: Booth[] = source.map(([boothNumber, circleName, genre, desc
       },
     ],
     paymentMethods: index % 3 === 0 ? ['現金', '交通系IC'] : ['現金'],
+    paymentMethodOther: '',
     xUrl: 'https://x.com/',
     shopUrl: 'https://example.com/',
   }

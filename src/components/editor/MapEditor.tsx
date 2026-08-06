@@ -138,7 +138,7 @@ export function MapEditor({ map, booths, selectedIds, snapEnabled, onSelect, onC
           onClick={(event) => {
             if (event.target !== event.currentTarget) return
             const p = point(event)
-            const candidate: Booth = { id: crypto.randomUUID(), boothNumber: `NEW${draft.length + 1}`, circleName: '新しい出展者', area: '', genre: '', description: '', x: p.x - 4, y: p.y - 3, width: 8, height: 6, items: [], paymentMethods: ['現金'], xUrl: '', shopUrl: '' }
+            const candidate: Booth = { id: crypto.randomUUID(), boothNumber: `NEW${draft.length + 1}`, circleName: '新しい出展者', area: '', genre: '', description: '', workCategory: 'original', sourceMedia: null, sourceTitle: '', x: p.x - 4, y: p.y - 3, width: 8, height: 6, items: [], paymentMethods: [], paymentMethodOther: '', xUrl: '', shopUrl: '' }
             const next = snapEnabled ? snapBooth(candidate, map.gridSize) : clampBooth(candidate)
             onCommit([...draft, next]); onSelect(next.id)
           }}

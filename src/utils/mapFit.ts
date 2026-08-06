@@ -13,6 +13,19 @@ export function calculateFitZoom(
   return Math.min(1, availableWidth / mapWidth, availableHeight / mapHeight)
 }
 
+export function calculateCenteredMapOffset(
+  containerWidth: number,
+  containerHeight: number,
+  mapWidth: number,
+  mapHeight: number,
+  zoom: number,
+) {
+  return {
+    left: Math.max(0, (containerWidth - mapWidth * zoom) / 2),
+    top: Math.max(0, (containerHeight - mapHeight * zoom) / 2),
+  }
+}
+
 interface BoothBounds {
   x: number
   y: number

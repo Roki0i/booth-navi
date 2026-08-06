@@ -43,6 +43,19 @@ describe('ブース検索', () => {
   it('すべての検索語を満たさないブースは除外される', () => {
     expect(searchBooths(booths, '薄荷 創作小説')).toEqual([])
   })
+  it('作品区分の日本語名で検索できる', () => {
+    expect(searchBooths(booths, '二次創作').every((booth) => booth.workCategory === 'derivative')).toBe(true)
+    expect(searchBooths(booths, '二次創作')).not.toHaveLength(0)
+  })
+  it('原作メディアで検索できる', () => {
+    expect(searchBooths(booths, '漫画').some((booth) => booth.sourceMedia === 'manga')).toBe(true)
+  })
+  it('原作名で検索できる', () => {
+    expect(searchBooths(booths, '月灯りの旅人').some((booth) => booth.sourceTitle === '月灯りの旅人')).toBe(true)
+  })
+  it('支払い方法で検索できる', () => {
+    expect(searchBooths(booths, '交通系IC').every((booth) => booth.paymentMethods.includes('交通系IC'))).toBe(true)
+  })
   it('ブース番号順に並べる', () => {
     const sorted = sortByBoothNumber([booths[8], booths[0], booths[7]])
     expect(sorted.map((booth) => booth.boothNumber)).toEqual(['A01', 'B26', 'B27'])

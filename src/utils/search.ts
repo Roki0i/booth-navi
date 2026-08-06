@@ -1,4 +1,5 @@
 import type { Booth } from '../types/booth'
+import { sourceMediaLabel, workCategoryLabel } from './boothMetadata'
 
 export function toHalfWidth(value: string): string {
   return value
@@ -26,6 +27,11 @@ export function searchBooths(allBooths: Booth[], query: string): Booth[] {
     const searchableText = [
       booth.circleName,
       booth.genre,
+      workCategoryLabel(booth.workCategory),
+      sourceMediaLabel(booth.sourceMedia),
+      booth.sourceTitle,
+      ...booth.paymentMethods,
+      booth.paymentMethodOther,
       ...booth.items.map((item) => item.name),
     ].map(normalizeText)
 

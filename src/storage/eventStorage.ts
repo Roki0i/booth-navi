@@ -1,4 +1,6 @@
 import type { EventProject } from '../types/event'
+import { EVENT_SCHEMA_VERSION } from '../types/event'
+import { normalizeBooth } from '../utils/boothMetadata'
 import { normalizeTheme } from '../utils/eventValidation'
 
 export const PROJECTS_KEY = 'booth-navi:event-projects'
@@ -14,7 +16,9 @@ export function loadProjects(storage: StorageLike = localStorage): EventProject[
     const value: unknown = JSON.parse(storage.getItem(PROJECTS_KEY) ?? '[]')
     return Array.isArray(value) ? (value as EventProject[]).map((project) => ({
       ...project,
+      schemaVersion: EVENT_SCHEMA_VERSION,
       theme: normalizeTheme(project.theme),
+      booths: Array.isArray(project.booths) ? project.booths.map(normalizeBooth) : [],
     })) : []
   } catch {
     return []

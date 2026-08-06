@@ -4,6 +4,8 @@ import type { EventMap } from '../types/event'
 import type { MapStyle } from '../types/event'
 import { useImageUrl } from '../hooks/useImageStorage'
 import { calculateBoothScrollPosition, calculateFitZoom } from '../utils/mapFit'
+import { calculateMapPopoverPosition } from '../utils/mapPopover'
+import { WorkCategoryBadge } from './WorkCategoryBadge'
 
 interface Props {
   booths: Booth[]
@@ -21,6 +23,8 @@ export function VenueMap({ booths, selectedId, focusRequest = 0, favoriteIds, vi
   const [zoom, setZoom] = useState(1)
   const [fitMode, setFitMode] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [previewId, setPreviewId] = useState('')
+  const [pinnedId, setPinnedId] = useState('')
   const scroller = useRef<HTMLDivElement>(null)
   const previousSelectedId = useRef(selectedId)
   const previousFocusRequest = useRef(focusRequest)
@@ -85,7 +89,19 @@ export function VenueMap({ booths, selectedId, focusRequest = 0, favoriteIds, vi
       window.removeEventListener('keydown', closeOnEscape)
     }
   }, [isFullscreen])
+  useEffect(() => {
+    const closePopover = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setPreviewId('')
+        setPinnedId('')
+      }
+    }
+    window.addEventListener('keydown', closePopover)
+    return () => window.removeEventListener('keydown', closePopover)
+  }, [])
   const mapImage = useImageUrl(map.backgroundImage)
+  const popoverBooth = booths.find((booth) => booth.id === (previewId || pinnedId))
+  const popoverPosition = popoverBooth ? calculateMapPopoverPosition(popoverBooth, map.width, map.height, zoom) : undefined
 
   const changeZoom = (amount: number) => {
     setFitMode(false)
@@ -114,14 +130,23 @@ export function VenueMap({ booths, selectedId, focusRequest = 0, favoriteIds, vi
         <span>✓ 訪問済み</span>
       </div>
       <div className="map-scroller" ref={scroller}>
+        <div
+          className="map-centerer"
+          style={{ minWidth: `${map.width * zoom}px`, minHeight: `${map.height * zoom}px` }}
+          onClick={() => {
+            setPreviewId('')
+            setPinnedId('')
+          }}
+        >
+        <div className="map-surface" style={{ width: `${map.width * zoom}px`, height: `${map.height * zoom}px` }}>
         <svg
           className="venue-map"
           style={{ width: `${map.width * zoom}px`, height: `${map.height * zoom}px` }}
           viewBox={`0 0 ${map.width} ${map.height}`}
           role="img"
-          aria-labelledby="venue-title venue-desc"
+          aria-label={`${eventName} 会場図`}
+          aria-describedby="venue-desc"
         >
-          <title id="venue-title">{eventName} 会場図</title>
           <desc id="venue-desc">{booths.length}件のブースが配置された会場マップです。</desc>
           {mapImage ? <image href={mapImage} x="0" y="0" width={map.width} height={map.height} preserveAspectRatio="xMidYMid slice" /> : <>
           <rect className="hall" x="20" y="20" width={map.width - 40} height={map.height - 40} rx="24" />
@@ -151,10 +176,25 @@ export function VenueMap({ booths, selectedId, focusRequest = 0, favoriteIds, vi
                 tabIndex={0}
                 aria-label={`${booth.boothNumber} ${booth.circleName}${favorite ? ' お気に入り' : ''}${visited ? ' 訪問済み' : ''}`}
                 aria-pressed={selected}
-                onClick={() => onSelect(booth)}
+                aria-describedby={(previewId || pinnedId) === booth.id ? 'map-booth-popover' : undefined}
+                onMouseEnter={() => setPreviewId(booth.id)}
+                onMouseLeave={(event) => {
+                  const next = event.relatedTarget
+                  if (!(next instanceof Element && next.closest('#map-booth-popover'))) setPreviewId('')
+                }}
+                onFocus={() => setPreviewId(booth.id)}
+                onBlur={() => setPreviewId('')}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  setPinnedId(booth.id)
+                  setPreviewId('')
+                  onSelect(booth)
+                }}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault()
+                    setPinnedId(booth.id)
+                    setPreviewId('')
                     onSelect(booth)
                   }
                 }}
@@ -168,6 +208,27 @@ export function VenueMap({ booths, selectedId, focusRequest = 0, favoriteIds, vi
             )
           })}
         </svg>
+        {popoverBooth && popoverPosition && <aside
+          id="map-booth-popover"
+          className={`map-booth-popover is-${popoverPosition.placement}`}
+          style={{ left: popoverPosition.left, top: popoverPosition.top, '--popover-arrow-left': `${popoverPosition.arrowLeft}px` } as React.CSSProperties}
+          data-testid="map-booth-popover"
+          aria-live="polite"
+          onMouseEnter={() => setPreviewId(popoverBooth.id)}
+          onMouseLeave={(event) => {
+            const next = event.relatedTarget
+            if (!(next instanceof Element && next.closest('.booth'))) setPreviewId('')
+          }}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <strong className="popover-booth-number">{popoverBooth.boothNumber}</strong>
+          <h3>{popoverBooth.circleName}</h3>
+          <p className="popover-genre">{popoverBooth.genre}</p>
+          <WorkCategoryBadge category={popoverBooth.workCategory} compact />
+          <p className="popover-item">{popoverBooth.items[0]?.name ?? '商品・配布物情報なし'}</p>
+        </aside>}
+        </div>
+        </div>
       </div>
     </section>
   )

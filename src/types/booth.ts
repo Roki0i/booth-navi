@@ -1,6 +1,9 @@
 export type Area = string
 
 export type ItemType = '新刊' | '既刊' | 'グッズ'
+export type WorkCategory = 'original' | 'derivative' | 'review' | 'other'
+export type SourceMedia = 'anime' | 'manga' | 'game' | 'novel' | 'vtuber' | 'tokusatsu' | 'other'
+export type PaymentMethod = '現金' | '交通系IC' | 'クレジットカード' | 'QR決済' | '電子マネー' | 'その他'
 
 export interface DistributionItem {
   id: string
@@ -22,7 +25,11 @@ export interface Booth {
   width: number
   height: number
   items: DistributionItem[]
-  paymentMethods: string[]
+  workCategory: WorkCategory
+  sourceMedia: SourceMedia | null
+  sourceTitle: string
+  paymentMethods: PaymentMethod[]
+  paymentMethodOther: string
   xUrl: string
   shopUrl: string
   menuImage?: ImageReference

@@ -5,7 +5,7 @@ import { findDuplicateBoothNumbers, themeToCssVariables, validateProject } from 
 describe('EventProject', () => {
   it('サンプルEventProjectを作成できる', () => {
     const project = createSampleEvent()
-    expect(project.schemaVersion).toBe(1)
+    expect(project.schemaVersion).toBe(2)
     expect(project.booths).toHaveLength(24)
   })
   it('テーマからCSS変数を生成し、不正色は除外する', () => {
@@ -13,6 +13,13 @@ describe('EventProject', () => {
     expect(themeToCssVariables(theme)).toMatchObject({ '--event-primary': '#123456' })
     expect(themeToCssVariables(theme)).toMatchObject({ '--event-map-background': '#ece9df' })
     expect(themeToCssVariables(theme)).not.toHaveProperty('--event-background')
+  })
+  it('背景に対して薄いテーマ文字色を読みやすい色へ補正する', () => {
+    const theme = { ...createSampleEvent().theme, surfaceColor: '#ffffff', textColor: '#eeeeee', mutedTextColor: '#dddddd' }
+    expect(themeToCssVariables(theme)).toMatchObject({
+      '--event-text': '#25252a',
+      '--event-muted': '#25252a',
+    })
   })
   it('既存イベントへマップテーマの初期値を補完する', () => {
     const project = createSampleEvent()
@@ -27,6 +34,6 @@ describe('EventProject', () => {
     expect(findDuplicateBoothNumbers([booth, { ...booth, id: 'other', boothNumber: 'a01' }])).toEqual(['A01'])
   })
   it('必須項目不足を拒否する', () => {
-    expect(validateProject({ schemaVersion: 1 }).valid).toBe(false)
+    expect(validateProject({ schemaVersion: 2 }).valid).toBe(false)
   })
 })

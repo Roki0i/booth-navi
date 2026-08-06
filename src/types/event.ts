@@ -1,6 +1,6 @@
 import type { Booth, ImageReference } from './booth'
 
-export const EVENT_SCHEMA_VERSION = 1
+export const EVENT_SCHEMA_VERSION = 2
 
 export type FontStyle = 'sans' | 'serif' | 'rounded'
 export type MapStyle = 'light' | 'dark' | 'image'
