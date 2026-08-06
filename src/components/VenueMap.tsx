@@ -20,6 +20,7 @@ interface Props {
 export function VenueMap({ booths, selectedId, focusRequest = 0, favoriteIds, visitedIds, onSelect, map, eventName, mapStyle }: Props) {
   const [zoom, setZoom] = useState(1)
   const [fitMode, setFitMode] = useState(true)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const scroller = useRef<HTMLDivElement>(null)
   const previousSelectedId = useRef(selectedId)
   const previousFocusRequest = useRef(focusRequest)
@@ -54,9 +55,36 @@ export function VenueMap({ booths, selectedId, focusRequest = 0, favoriteIds, vi
     if ((!selectionChanged && !focusRequested) || !hasMeasured.current) return
     const booth = booths.find((candidate) => candidate.id === selectedId)
     if (!booth || !scroller.current) return
-    const position = calculateBoothScrollPosition(booth, map.width, map.height, zoom, scroller.current.clientWidth, scroller.current.clientHeight)
-    scroller.current.scrollTo({ ...position, behavior: 'smooth' })
+    const element = scroller.current
+    const isMobile = window.matchMedia('(max-width: 600px)').matches
+    const targetZoom = isMobile
+      ? Math.min(1.25, Math.max(.75, calculateFitZoom(element.clientWidth, element.clientHeight, map.width, map.height) * 1.8))
+      : zoom
+    requestAnimationFrame(() => {
+      if (isMobile) {
+        setFitMode(false)
+        setZoom(targetZoom)
+      }
+      requestAnimationFrame(() => {
+        const position = calculateBoothScrollPosition(booth, map.width, map.height, targetZoom, element.clientWidth, element.clientHeight)
+        element.scrollTo({ ...position, behavior: 'smooth' })
+      })
+    })
   }, [selectedId, focusRequest, booths, zoom, map])
+
+  useEffect(() => {
+    if (!isFullscreen) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsFullscreen(false)
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [isFullscreen])
   const mapImage = useImageUrl(map.backgroundImage)
 
   const changeZoom = (amount: number) => {
@@ -65,14 +93,19 @@ export function VenueMap({ booths, selectedId, focusRequest = 0, favoriteIds, vi
   }
 
   return (
-    <section className={`map-card themed-map map-style-${mapImage ? 'image' : mapStyle}`} aria-labelledby="map-title">
+    <section className={`map-card themed-map map-style-${mapImage ? 'image' : mapStyle} ${isFullscreen ? 'map-fullscreen' : ''}`} aria-labelledby="map-title">
       <div className="map-toolbar">
         <div><p className="eyebrow">VENUE MAP</p><h2 id="map-title">会場マップ</h2></div>
-        <div className="zoom-controls" aria-label="マップ表示倍率">
-          <button type="button" onClick={() => changeZoom(-.25)} disabled={zoom <= .25} aria-label="縮小">−</button>
-          <output aria-live="polite">{fitMode ? 'フィット' : `${Math.round(zoom * 100)}%`}</output>
-          <button type="button" onClick={() => changeZoom(.25)} disabled={zoom >= 2} aria-label="拡大">＋</button>
-          <button type="button" onClick={() => fitToContainer()}>全体表示</button>
+        <div className="map-toolbar-actions">
+          <div className="zoom-controls" aria-label="マップ表示倍率">
+            <button type="button" onClick={() => changeZoom(-.25)} disabled={zoom <= .25} aria-label="縮小">−</button>
+            <output aria-live="polite">{fitMode ? '全体' : `${Math.round(zoom * 100)}%`}</output>
+            <button type="button" onClick={() => changeZoom(.25)} disabled={zoom >= 2} aria-label="拡大">＋</button>
+            <button type="button" onClick={() => fitToContainer()}>全体表示</button>
+          </div>
+          <button className="map-fullscreen-toggle" type="button" onClick={() => setIsFullscreen((value) => !value)}>
+            {isFullscreen ? '全画面を閉じる' : '全画面で見る'}
+          </button>
         </div>
       </div>
       <div className="map-legend" aria-label="凡例">

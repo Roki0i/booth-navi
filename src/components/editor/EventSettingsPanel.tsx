@@ -13,6 +13,7 @@ interface Props {
   onImportBooths: (booths: Booth[]) => void
   snapEnabled: boolean
   onSnapChange: (enabled: boolean) => void
+  onSnapAll: () => void
 }
 
 type SettingsTab = 'basic' | 'theme' | 'images' | 'map' | 'data'
@@ -20,7 +21,7 @@ const tabs: Array<[SettingsTab, string]> = [
   ['basic', '基本情報'], ['theme', 'テーマ'], ['images', '画像'], ['map', 'マップ設定'], ['data', 'データ入出力'],
 ]
 
-export function EventSettingsPanel({ project, onChange, onAddProject, onImportBooths, snapEnabled, onSnapChange }: Props) {
+export function EventSettingsPanel({ project, onChange, onAddProject, onImportBooths, snapEnabled, onSnapChange, onSnapAll }: Props) {
   const [tab, setTab] = useState<SettingsTab>('basic')
   const field = (key: 'name' | 'shortName' | 'date' | 'venue' | 'description', value: string) => onChange({ ...project, [key]: value })
   const setMapTheme = <K extends 'mapBackgroundColor' | 'mapSurfaceColor' | 'mapTextColor' | 'mapStyle'>(key: K, value: EventProject['theme'][K]) =>
@@ -63,9 +64,13 @@ export function EventSettingsPanel({ project, onChange, onAddProject, onImportBo
           </select></label>
           {([['mapBackgroundColor', 'マップ背景色'], ['mapSurfaceColor', '会場面の色'], ['mapTextColor', 'マップ文字色']] as const).map(([key, label]) =>
             <label key={key}>{label}<input type="color" value={project.theme[key]} onChange={(event) => setMapTheme(key, event.target.value)} /></label>)}
-          <label>グリッド間隔 (%)<input type="number" min="1" max="25" value={project.map.gridSize} onChange={(event) => onChange({ ...project, map: { ...project.map, gridSize: Math.max(1, Number(event.target.value)) } })} /></label>
+          <label>グリッド間隔（%）<input type="number" min="0.25" max="25" step="0.25" value={project.map.gridSize} onChange={(event) => {
+            const value = Number(event.target.value)
+            if (Number.isFinite(value) && value >= .25 && value <= 25) onChange({ ...project, map: { ...project.map, gridSize: value } })
+          }} /></label>
           <label className="check-row"><input type="checkbox" checked={project.map.showGrid} onChange={(event) => onChange({ ...project, map: { ...project.map, showGrid: event.target.checked } })} />グリッドを表示</label>
           <label className="check-row"><input type="checkbox" checked={snapEnabled} onChange={(event) => onSnapChange(event.target.checked)} />グリッドへスナップ</label>
+          <button type="button" onClick={onSnapAll}>すべてのブースをグリッドに合わせる</button>
         </fieldset>}
         {tab === 'data' && <div role="tabpanel"><CsvImporter current={project.booths} onImport={onImportBooths} /><ProjectImportExport project={project} onOverwrite={onChange} onAdd={onAddProject} /></div>}
       </div>

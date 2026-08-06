@@ -1,6 +1,7 @@
 import { useId, useMemo, useRef, useState } from 'react'
 import type { Booth } from '../types/booth'
 import { searchBooths } from '../utils/search'
+import { UI_TEXT } from '../utils/uiText'
 
 interface Props {
   booths: Booth[]
@@ -27,9 +28,9 @@ export function SearchBox({ booths, selectedBooth, onSelect }: Props) {
           <p className="eyebrow">FIND A BOOTH</p>
           <h2 id="search-title">ブースを探す</h2>
         </div>
-        <span className="key-hint" aria-hidden="true">番号 / 名前</span>
+        <span className="key-hint" aria-hidden="true">番号／名称</span>
       </div>
-      <label htmlFor={inputId} className="sr-only">ブース番号またはサークル名</label>
+      <label htmlFor={inputId} className="sr-only">ブース番号、サークル名・出展者名</label>
       <div className="search-input-wrap">
         <span aria-hidden="true">⌕</span>
         <input
@@ -61,10 +62,10 @@ export function SearchBox({ booths, selectedBooth, onSelect }: Props) {
         )}
       </div>
       <div className="result-status" aria-live="polite">
-        {hasQuery ? (results.length ? `${results.length}件の候補` : '一致するブースが見つかりません') : '番号のハイフン・空白・全角半角は問いません'}
+        {hasQuery ? (results.length ? `${results.length}件の候補` : '一致するブースが見つかりません。') : UI_TEXT.searchHint}
       </div>
       {hasQuery && results.length === 0 && selectedBooth && (
-        <p className="search-mismatch">現在表示中のブースは検索条件と一致していません</p>
+        <p className="search-mismatch">表示中のブースは検索条件と一致していません。</p>
       )}
       {hasQuery && results.length > 0 && (
         <ul id="search-results" className="search-results">

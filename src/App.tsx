@@ -47,7 +47,7 @@ export default function App() {
           <button type="button" className={mode === 'view' ? 'active' : ''} onClick={() => setMode('view')}>閲覧モード</button>
           <button type="button" className={mode === 'edit' ? 'active' : ''} onClick={() => setMode('edit')}>編集モード</button>
         </div>
-        <span className={`save-status status-${manager.saveStatus}`} aria-live="polite">{manager.saveStatus === 'saving' ? '保存中…' : manager.saveStatus === 'saved' ? '保存済み' : '保存失敗'}</span>
+        <span className={`save-status status-${manager.saveStatus}`} aria-live="polite">{manager.saveStatus === 'saving' ? '保存中…' : manager.saveStatus === 'saved' ? '保存しました' : '保存できませんでした'}</span>
         {mode === 'view' && <dl className="stats"><div><dt>ブース</dt><dd>{project.booths.length}</dd></div><div><dt>お気に入り</dt><dd>{favorites.ids.length}</dd></div><div><dt>訪問済み</dt><dd>{visited.ids.length}</dd></div></dl>}
       </div>
       {showEvents && <div className="event-switcher">
@@ -65,6 +65,6 @@ export default function App() {
         <FavoritesList booths={project.booths} favoriteIds={favorites.ids} visitedIds={visited.ids} onSelect={selectBooth} onRemove={favorites.toggle} />
       </> : <section className="empty-event"><h2>ブースはまだありません</h2><p>編集モードでマップをクリックして追加できます。</p></section>}
     </main> : <main className="editor-main"><EventEditor project={project} onChange={manager.updateCurrent} onAddProject={manager.add} /></main>}
-    <footer><strong>Booth Navi</strong><span>{project.name} · ブラウザ内で保存</span></footer>
+    <footer><strong>Booth Navi</strong><span>{project.name} · このブラウザに保存</span></footer>
   </div>
 }

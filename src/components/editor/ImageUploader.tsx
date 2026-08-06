@@ -27,7 +27,7 @@ export function ImageUploader({ label, value, onChange }: Props) {
         if (!validation.valid) return
         try { onChange(await save(file, alt)) } catch { setMessage('画像を保存できませんでした。画像なしで他の機能は利用できます。') }
       }} />
-      <label>altテキスト<input value={alt} onChange={(event) => {
+      <label>代替テキスト<input value={alt} onChange={(event) => {
         setAlt(event.target.value)
         if (value) onChange({ ...value, alt: event.target.value })
       }} /></label>

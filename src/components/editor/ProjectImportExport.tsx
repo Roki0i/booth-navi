@@ -7,8 +7,8 @@ interface Props { project: EventProject; onOverwrite: (project: EventProject) =>
 export function ProjectImportExport({ project, onOverwrite, onAdd }: Props) {
   const [candidate, setCandidate] = useState<EventProject>()
   const [errors, setErrors] = useState<string[]>([])
-  return <section className="import-box"><h3>JSONインポート・エクスポート</h3>
-    <p>構造化データを書き出します。画像Blobは含まれません。</p>
+  return <section className="import-box"><h3>JSONの読み込み・書き出し</h3>
+    <p>イベントデータをJSON形式で書き出します。アップロードした画像のデータは含まれません。</p>
     <button type="button" onClick={() => downloadText(exportProject(project), projectFileName(project.name), 'application/json')}>JSONを書き出す</button>
     <input type="file" accept=".json,application/json" onChange={async (event) => {
       const file = event.target.files?.[0]
@@ -18,8 +18,8 @@ export function ProjectImportExport({ project, onOverwrite, onAdd }: Props) {
     }} />
     {errors.map((error) => <p className="field-error" key={error}>{error}</p>)}
     {candidate && <div className="import-preview"><strong>{candidate.name}</strong><p>{candidate.booths.length}ブース / schemaVersion {candidate.schemaVersion}</p>
-      <button type="button" onClick={() => { if (confirm('現在のイベントを上書きしますか？')) onOverwrite({ ...candidate, id: project.id }) }}>現在を上書き</button>
-      <button type="button" onClick={() => { if (confirm('新しいイベントとして追加しますか？')) onAdd({ ...candidate, id: crypto.randomUUID(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }) }}>新規追加</button>
+      <button type="button" onClick={() => { if (confirm('現在のイベントを上書きしますか？')) onOverwrite({ ...candidate, id: project.id }) }}>現在のイベントを上書き</button>
+      <button type="button" onClick={() => { if (confirm('新しいイベントとして追加しますか？')) onAdd({ ...candidate, id: crypto.randomUUID(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }) }}>新しいイベントとして追加</button>
     </div>}
   </section>
 }
