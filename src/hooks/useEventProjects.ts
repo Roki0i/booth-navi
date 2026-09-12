@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createSampleEvent, SAMPLE_EVENT_ID } from '../data/sampleEvents'
 import { EVENT_SCHEMA_VERSION, type EventProject } from '../types/event'
 import { loadLastProjectId, loadProjects, saveLastProjectId, saveProjects } from '../storage/eventStorage'
@@ -55,20 +55,41 @@ export function useEventProjects() {
   const initialized = useRef(false)
   const current = projects.find((project) => project.id === currentId) ?? projects[0]
 
-  useEffect(() => {
+  const pending = useRef<{ projects: EventProject[]; currentId: string } | null>(null)
+  const flush = useCallback((notify = true) => {
+    if (!pending.current) return
+    try {
+      saveProjects(pending.current.projects)
+      saveLastProjectId(pending.current.currentId)
+      pending.current = null
+      if (notify) setSaveStatus('saved')
+    } catch {
+      // 失敗した変更は保持し、次の編集・終了通知で再試行する。
+      if (notify) setSaveStatus('error')
+    }
+  }, [])
+
+  useLayoutEffect(() => {
     if (!initialized.current) { initialized.current = true; return }
+    pending.current = { projects, currentId }
     setSaveStatus('saving')
-    const timer = window.setTimeout(() => {
-      try {
-        saveProjects(projects)
-        saveLastProjectId(currentId)
-        setSaveStatus('saved')
-      } catch {
-        setSaveStatus('error')
-      }
-    }, 250)
+    const timer = window.setTimeout(() => flush(), 250)
     return () => window.clearTimeout(timer)
-  }, [projects, currentId])
+  }, [projects, currentId, flush])
+
+  useEffect(() => {
+    const onHide = () => flush()
+    const onVisibility = () => { if (document.visibilityState === 'hidden') flush() }
+    window.addEventListener('pagehide', onHide)
+    window.addEventListener('beforeunload', onHide)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      window.removeEventListener('pagehide', onHide)
+      window.removeEventListener('beforeunload', onHide)
+      document.removeEventListener('visibilitychange', onVisibility)
+      flush(false)
+    }
+  }, [flush])
 
   const updateCurrent = useCallback((update: EventProject | ((project: EventProject) => EventProject)) => {
     setProjects((all) => all.map((project) => project.id === currentId

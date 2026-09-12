@@ -70,6 +70,7 @@ export default function App() {
         <div className="event-switcher-list">{manager.projects.map((event) => <button key={event.id} type="button" className={event.id === project.id ? 'active' : ''} onClick={() => { manager.setCurrentId(event.id); setShowEvents(false) }}><strong>{event.name}</strong><small>{event.date} · {event.venue || '会場未設定'}</small></button>)}</div>
         <div className="event-switcher-actions"><button type="button" onClick={() => { manager.add(); setShowEvents(false) }}>新規作成</button><button type="button" onClick={() => { manager.duplicate(); setShowEvents(false) }}>複製</button><button type="button" onClick={() => { if (confirm(`「${project.name}」を削除しますか？`)) manager.remove(project.id) }}>削除</button><button type="button" onClick={() => { if (confirm('サンプルイベントを初期状態へ戻しますか？')) manager.resetSample() }}>サンプルへリセット</button></div>
       </div>}
+      {(favorites.saveStatus === 'error' || visited.saveStatus === 'error') && <p role="alert">お気に入り・訪問済みを保存できませんでした。状態は変更していません。もう一度操作してください。</p>}
     </header>
     {mode === 'view' ? <main>
       <section className={`intro ${heroUrl ? 'has-hero' : ''}`} style={heroUrl ? { backgroundImage: `linear-gradient(90deg,rgba(20,18,28,.86),rgba(20,18,28,.25)),url(${heroUrl})` } : undefined}>

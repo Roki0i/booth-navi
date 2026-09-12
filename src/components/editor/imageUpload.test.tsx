@@ -6,7 +6,7 @@ import { EventEditor } from './EventEditor'
 import type { MapEditor } from './MapEditor'
 import { useEventProjects } from '../../hooks/useEventProjects'
 import { createSampleEvent } from '../../data/sampleEvents'
-import { saveProjects } from '../../storage/eventStorage'
+import { loadProjects, saveProjects } from '../../storage/eventStorage'
 import { putImage } from '../../storage/imageStorage'
 import type { EventAssets } from '../../types/event'
 
@@ -129,5 +129,39 @@ describe('H4: 保存中の編集と対象切り替え', () => {
     await act(async () => complete())
     expect(manager.current.assets.logoImage).toEqual({ id: 'other-logo', alt: 'other alt' })
     expect((uploader('イベントロゴ').querySelector('input:not([type=file])') as HTMLInputElement).value).toBe('other alt')
+  })
+})
+
+// H5: transaction失敗が伝播したときに既存の画像参照と保存データを保つ。
+describe('H5: 画像保存失敗', () => {
+  it('差し替え失敗で既存画像とイベントを壊さない', async () => {
+    vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
+    const values = new Map<string, string>()
+    vi.stubGlobal('localStorage', { getItem: (key: string) => values.get(key) ?? null, setItem: (key: string, value: string) => { values.set(key, value) } })
+    vi.stubGlobal('URL', { createObjectURL: () => 'blob:old', revokeObjectURL: vi.fn() })
+    const oldImage = { id: 'old-logo', alt: 'old' }
+    const oldBlob = new Blob(['old'])
+    blobs.set(oldImage.id, oldBlob)
+    const project = createSampleEvent('failure')
+    project.assets.logoImage = oldImage
+    saveProjects([project])
+    vi.mocked(putImage).mockRejectedValueOnce(new Error('transaction aborted'))
+    const container = document.createElement('div')
+    const root = createRoot(container)
+    try {
+      await act(async () => root.render(<Harness />))
+      await act(async () => [...container.querySelectorAll('button')].find((node) => node.textContent === '画像')!.click())
+      const uploader = [...container.querySelectorAll('.image-uploader')].find((node) => node.querySelector('strong')?.textContent === 'イベントロゴ')!
+      const input = uploader.querySelector('input[type=file]')!
+      Object.defineProperty(input, 'files', { value: [new File(['new'], 'new.png', { type: 'image/png' })] })
+      await act(async () => input.dispatchEvent(new Event('change', { bubbles: true })))
+      expect(uploader.textContent).toContain('画像を保存できませんでした')
+      expect(manager.current.assets.logoImage).toEqual(oldImage)
+      expect(loadProjects()[0].assets.logoImage).toEqual(oldImage)
+      expect(blobs.get(oldImage.id)).toBe(oldBlob)
+    } finally {
+      act(() => root.unmount())
+      vi.unstubAllGlobals()
+    }
   })
 })

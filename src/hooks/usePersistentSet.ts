@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 export function toggleId(ids: string[], id: string): string[] {
   return ids.includes(id) ? ids.filter((current) => current !== id) : [...ids, id]
@@ -15,24 +15,22 @@ function readStorage(key: string): string[] {
 }
 
 export function usePersistentSet(key: string) {
-  const [state, setState] = useState(() => ({ key, ids: readStorage(key) }))
+  const [state, setState] = useState(() => ({ key, ids: readStorage(key), saveStatus: 'saved' as 'saved' | 'error' }))
+  const latest = useRef(state)
   const ids = state.key === key ? state.ids : readStorage(key)
 
-  const toggle = useCallback(
-    (id: string) => {
-      setState((currentState) => {
-        const current = currentState.key === key ? currentState.ids : readStorage(key)
-        const next = toggleId(current, id)
-        try {
-          localStorage.setItem(key, JSON.stringify(next))
-        } catch {
-          // Keep the in-memory state when storage is unavailable.
-        }
-        return { key, ids: next }
-      })
-    },
-    [key],
-  )
+  const toggle = useCallback((id: string) => {
+    const current = latest.current.key === key ? latest.current.ids : readStorage(key)
+    const next = toggleId(current, id)
+    // state updaterは再実行されるため、同期保存は操作ごとに一度だけ行う。
+    try {
+      localStorage.setItem(key, JSON.stringify(next))
+      latest.current = { key, ids: next, saveStatus: 'saved' }
+    } catch {
+      latest.current = { key, ids: current, saveStatus: 'error' }
+    }
+    setState(latest.current)
+  }, [key])
 
-  return { ids, has: (id: string) => ids.includes(id), toggle }
+  return { ids, has: (id: string) => ids.includes(id), toggle, saveStatus: state.key === key ? state.saveStatus : 'saved' }
 }

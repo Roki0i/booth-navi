@@ -13,13 +13,26 @@ function openDatabase(): Promise<IDBDatabase> {
 
 async function transact<T>(mode: IDBTransactionMode, action: (store: IDBObjectStore) => IDBRequest<T>): Promise<T> {
   const db = await openDatabase()
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, mode)
-    const request = action(transaction.objectStore(STORE_NAME))
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () => reject(request.error)
-    transaction.oncomplete = () => db.close()
-  })
+  try {
+    return await new Promise<T>((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, mode)
+      let request: IDBRequest<T>
+      let failure: DOMException | null = null
+      // request成功では確定していない。abort時は参照を呼び出し元へ返さない。
+      transaction.oncomplete = () => resolve(request.result)
+      transaction.onabort = () => reject(transaction.error ?? failure ?? new Error('画像の保存処理が中断されました。'))
+      transaction.onerror = () => { failure = transaction.error ?? failure }
+      try {
+        request = action(transaction.objectStore(STORE_NAME))
+        request.onerror = () => { failure = request.error }
+      } catch (error) {
+        transaction.abort()
+        reject(error)
+      }
+    })
+  } finally {
+    db.close()
+  }
 }
 
 export const putImage = (id: string, blob: Blob) => transact('readwrite', (store) => store.put(blob, id))
