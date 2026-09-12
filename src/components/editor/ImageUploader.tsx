@@ -12,7 +12,7 @@ interface Props {
 export function ImageUploader({ label, value, onChange }: Props) {
   const input = useRef<HTMLInputElement>(null)
   const url = useImageUrl(value)
-  const { save, remove } = useImageStorage()
+  const { save } = useImageStorage()
   const [alt, setAlt] = useState(value?.alt ?? '')
   const [message, setMessage] = useState('')
   return (
@@ -31,8 +31,8 @@ export function ImageUploader({ label, value, onChange }: Props) {
         setAlt(event.target.value)
         if (value) onChange({ ...value, alt: event.target.value })
       }} /></label>
-      {value && <button type="button" className="danger-link" onClick={async () => {
-        try { await remove(value.id) } catch { /* IndexedDB unavailable; reference removal still works */ }
+      {value && <button type="button" className="danger-link" onClick={() => {
+        // 複製先やUndo履歴も同じBlobを参照するため、ここでは参照だけを外す。
         onChange(undefined); if (input.current) input.current.value = ''
       }}>画像を削除</button>}
       {message && <p className={message.includes('のみ') || message.includes('できません') ? 'field-error' : 'field-warning'}>{message}</p>}

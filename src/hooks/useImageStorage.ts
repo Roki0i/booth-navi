@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { ImageReference } from '../types/booth'
-import { deleteImage, getImage, putImage } from '../storage/imageStorage'
+import { getImage, putImage } from '../storage/imageStorage'
 
 export function useImageUrl(reference?: ImageReference) {
   const [loaded, setLoaded] = useState<{ id: string; url: string }>()
@@ -22,5 +22,5 @@ export function useImageStorage() {
     await putImage(reference.id, file)
     return reference
   }, [])
-  return { save, remove: deleteImage }
+  return { save }
 }
