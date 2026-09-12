@@ -1,7 +1,5 @@
 import type { EventProject } from '../types/event'
-import { EVENT_SCHEMA_VERSION } from '../types/event'
-import { normalizeBooth } from '../utils/boothMetadata'
-import { normalizeTheme } from '../utils/eventValidation'
+import { validateProject } from '../utils/eventValidation'
 
 export const PROJECTS_KEY = 'booth-navi:event-projects'
 export const LAST_PROJECT_KEY = 'booth-navi:last-event'
@@ -14,12 +12,11 @@ export interface StorageLike {
 export function loadProjects(storage: StorageLike = localStorage): EventProject[] {
   try {
     const value: unknown = JSON.parse(storage.getItem(PROJECTS_KEY) ?? '[]')
-    return Array.isArray(value) ? (value as EventProject[]).map((project) => ({
-      ...project,
-      schemaVersion: EVENT_SCHEMA_VERSION,
-      theme: normalizeTheme(project.theme),
-      booths: Array.isArray(project.booths) ? project.booths.map(normalizeBooth) : [],
-    })) : []
+    if (!Array.isArray(value)) return []
+    return value.flatMap((entry: unknown) => {
+      const result = validateProject(entry)
+      return result.valid && result.project ? [result.project] : []
+    })
   } catch {
     return []
   }
