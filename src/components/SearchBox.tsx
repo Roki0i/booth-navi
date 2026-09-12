@@ -40,6 +40,7 @@ export function SearchBox({ booths, selectedBooth, onSelect }: Props) {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           onKeyDown={(event) => {
+            if (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) return
             if (event.key === 'Enter' && results[0]) select(results[0])
           }}
           placeholder="例：B27、薄荷ドロップ"
