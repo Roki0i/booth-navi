@@ -9,7 +9,7 @@ import { alignBooths, moveBooth, snapBooths, type Alignment } from '../../utils/
 
 interface Props {
   project: EventProject
-  onChange: (project: EventProject) => void
+  onChange: (update: EventProject | ((project: EventProject) => EventProject)) => void
   onAddProject: (project: EventProject) => void
 }
 

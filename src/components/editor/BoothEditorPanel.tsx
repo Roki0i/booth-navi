@@ -85,7 +85,7 @@ export function BoothEditorPanel({ booth, booths, gridSize, snapEnabled, onChang
         }} />{invalid && <small className="field-error">指定できる範囲は{min}〜100%です。</small>}</label>
       })}</div>
     </div>
-    <details><summary>お品書き画像</summary><ImageUploader label="ブースのお品書き" value={booth.menuImage} onChange={(menuImage) => set('menuImage', menuImage)} /></details>
+    <details><summary>お品書き画像</summary><ImageUploader key={booth.id} label="ブースのお品書き" value={booth.menuImage} onChange={(menuImage) => set('menuImage', menuImage)} /></details>
     <section className="item-editor"><div className="panel-heading"><h3>商品・配布物</h3><button type="button" onClick={() => set('items', [...booth.items, { id: crypto.randomUUID(), name: '新しい商品・配布物', price: 0, type: '新刊', description: '' }])}>追加</button></div>
       {!booth.items.length && <p className="empty-list">商品・配布物はまだ登録されていません。「追加」から登録できます。</p>}
       {booth.items.map((item, index) => <div className="item-form" key={item.id}>

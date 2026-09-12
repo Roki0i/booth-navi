@@ -8,7 +8,7 @@ import { ThemeEditor } from './ThemeEditor'
 
 interface Props {
   project: EventProject
-  onChange: (project: EventProject) => void
+  onChange: (update: EventProject | ((project: EventProject) => EventProject)) => void
   onAddProject: (project: EventProject) => void
   onImportBooths: (booths: Booth[]) => void
   snapEnabled: boolean
@@ -53,10 +53,10 @@ export function EventSettingsPanel({ project, onChange, onAddProject, onImportBo
         </div>}
         {tab === 'theme' && <div role="tabpanel"><ThemeEditor theme={project.theme} onChange={(theme) => onChange({ ...project, theme })} /></div>}
         {tab === 'images' && <div role="tabpanel">
-          <ImageUploader label="イベントロゴ" value={project.assets.logoImage} onChange={(logoImage) => onChange({ ...project, assets: { ...project.assets, logoImage } })} />
-          <ImageUploader label="メインビジュアル" value={project.assets.heroImage} onChange={(heroImage) => onChange({ ...project, assets: { ...project.assets, heroImage } })} />
-          <ImageUploader label="ページ背景画像" value={project.assets.pageBackgroundImage} onChange={(pageBackgroundImage) => onChange({ ...project, assets: { ...project.assets, pageBackgroundImage } })} />
-          <ImageUploader label="会場マップ画像" value={project.assets.mapImage} onChange={(mapImage) => onChange({ ...project, assets: { ...project.assets, mapImage }, map: { ...project.map, backgroundImage: mapImage } })} />
+          <ImageUploader label="イベントロゴ" value={project.assets.logoImage} onChange={(logoImage) => onChange((current) => current.id === project.id ? { ...current, assets: { ...current.assets, logoImage } } : current)} />
+          <ImageUploader label="メインビジュアル" value={project.assets.heroImage} onChange={(heroImage) => onChange((current) => current.id === project.id ? { ...current, assets: { ...current.assets, heroImage } } : current)} />
+          <ImageUploader label="ページ背景画像" value={project.assets.pageBackgroundImage} onChange={(pageBackgroundImage) => onChange((current) => current.id === project.id ? { ...current, assets: { ...current.assets, pageBackgroundImage } } : current)} />
+          <ImageUploader label="会場マップ画像" value={project.assets.mapImage} onChange={(mapImage) => onChange((current) => current.id === project.id ? { ...current, assets: { ...current.assets, mapImage }, map: { ...current.map, backgroundImage: mapImage } } : current)} />
         </div>}
         {tab === 'map' && <fieldset className="form-section" role="tabpanel"><legend>マップ設定</legend>
           <label>マップスタイル<select value={project.theme.mapStyle} onChange={(event) => setMapStyle(event.target.value as EventProject['theme']['mapStyle'])}>

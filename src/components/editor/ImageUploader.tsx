@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import type { ImageReference } from '../../types/booth'
 import { useImageStorage, useImageUrl } from '../../hooks/useImageStorage'
 import { validateImage } from '../../utils/imageValidation'
@@ -14,7 +14,17 @@ export function ImageUploader({ label, value, onChange }: Props) {
   const url = useImageUrl(value)
   const { save } = useImageStorage()
   const [alt, setAlt] = useState(value?.alt ?? '')
+  const [previousValue, setPreviousValue] = useState(value)
+  if (previousValue !== value) {
+    setPreviousValue(value)
+    setAlt(value?.alt ?? '')
+  }
   const [message, setMessage] = useState('')
+  const latest = useRef({ onChange, alt })
+  const request = useRef(0)
+  useLayoutEffect(() => { latest.current = { onChange, alt } }, [onChange, alt])
+  // 対象切り替え・削除・再アップロード後に古い保存結果を反映しない。
+  useLayoutEffect(() => () => { request.current += 1 }, [])
   return (
     <div className="image-uploader">
       <strong>{label}</strong>
@@ -25,7 +35,13 @@ export function ImageUploader({ label, value, onChange }: Props) {
         const validation = validateImage(file)
         setMessage(validation.error ?? validation.warning ?? '')
         if (!validation.valid) return
-        try { onChange(await save(file, alt)) } catch { setMessage('画像を保存できませんでした。画像なしで他の機能は利用できます。') }
+        const token = ++request.current
+        try {
+          const saved = await save(file, alt)
+          if (token === request.current) latest.current.onChange({ ...saved, alt: latest.current.alt })
+        } catch {
+          if (token === request.current) setMessage('画像を保存できませんでした。画像なしで他の機能は利用できます。')
+        }
       }} />
       <label>代替テキスト<input value={alt} onChange={(event) => {
         setAlt(event.target.value)
@@ -33,6 +49,8 @@ export function ImageUploader({ label, value, onChange }: Props) {
       }} /></label>
       {value && <button type="button" className="danger-link" onClick={() => {
         // 複製先やUndo履歴も同じBlobを参照するため、ここでは参照だけを外す。
+        request.current += 1
+        setAlt('')
         onChange(undefined); if (input.current) input.current.value = ''
       }}>画像を削除</button>}
       {message && <p className={message.includes('のみ') || message.includes('できません') ? 'field-error' : 'field-warning'}>{message}</p>}
