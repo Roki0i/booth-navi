@@ -67,7 +67,7 @@ UTF-8 CSVのプレビュー、必須項目の検証、不正行一覧、ブー�
 
 ## 10. ローカル起動
 
-Node.js 24とnpmを用意します。
+Node.js 24とnpmを用意します。Nodeのバージョンは`.nvmrc`で管理し、CIとデプロイでも同じファイルを参照します。nvmを利用している場合は`nvm install`と`nvm use`で合わせられます。
 
 ```bash
 npm ci
@@ -110,7 +110,9 @@ Phase 4には、認証、イベントデータと画像のクラウド保存、�
 
 ## GitHub Pages
 
-`.github/workflows/deploy-pages.yml`は`main`へのpush時にNode.js 24で依存関係を復元し、lint、テスト、ビルド後に`dist`を公開します。Viteの`base`は`/booth-navi/`のまま維持しています。
+`.github/workflows/ci.yml`は全ブランチ向けのPRの作成・コミット追加・再オープン時に、`npm ci`、`npm test`、`npm run lint`、`npm run build`を順に実行します。同じPRへの追加更新では古いCIをキャンセルします。PR用CIには読み取り権限だけを与え、デプロイは行いません。
+
+`.github/workflows/deploy-pages.yml`は`main`へのpush時、または手動実行時にNode.js 24で依存関係を復元し、lint、テスト、ビルド後に`dist`を公開します。PR用CIとは別の同時実行グループを使います。Viteの`base`は`/booth-navi/`のまま維持しています。
 
 ### 保存の完了と終了時の扱い（H5）
 
