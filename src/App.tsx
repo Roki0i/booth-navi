@@ -81,7 +81,7 @@ export default function App() {
         {isNarrow && <BoothBottomSheet booth={selected} isOpen={isSheetOpen} onClose={closeSheet} returnFocusRef={returnFocusRef} isFavorite={favorites.has(selected.id)} isVisited={visited.has(selected.id)} onToggleFavorite={() => favorites.toggle(selected.id)} onToggleVisited={() => visited.toggle(selected.id)} />}
         <FavoritesList booths={project.booths} favoriteIds={favorites.ids} visitedIds={visited.ids} onSelect={selectBooth} onRemove={favorites.toggle} />
       </> : <section className="empty-event"><h2>ブースはまだありません</h2><p>編集モードでマップをクリックして追加できます。</p></section>}
-    </main> : <main className="editor-main"><EventEditor project={project} onChange={manager.updateCurrent} onAddProject={manager.add} /></main>}
+    </main> : <main className="editor-main"><EventEditor key={project.id} project={project} onChange={manager.updateCurrent} onAddProject={manager.add} /></main>}
     <footer><strong>Booth Navi</strong><span>{project.name} · このブラウザに保存</span></footer>
   </div>
 }
