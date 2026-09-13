@@ -110,9 +110,35 @@ Phase 4には、認証、イベントデータと画像のクラウド保存、�
 
 ## GitHub Pages
 
-`.github/workflows/ci.yml`は全ブランチ向けのPRの作成・コミット追加・再オープン時に、`npm ci`、`npm test`、`npm run lint`、`npm run build`を順に実行します。同じPRへの追加更新では古いCIをキャンセルします。PR用CIには読み取り権限だけを与え、デプロイは行いません。
+`.github/workflows/ci.yml`は全ブランチ向けのPRの作成・コミット追加・再オープン時に、`npm ci`、`npm test`、`npm run lint`、`npm run build`、Chromiumのインストール、`npm run test:e2e`を順に実行します。同じPRへの追加更新では古いCIをキャンセルします。PR用CIには読み取り権限だけを与え、デプロイは行いません。E2Eレポートと失敗時のトレース・スクリーンショットはArtifactsに7日間保存します。
 
 `.github/workflows/deploy-pages.yml`は`main`へのpush時、または手動実行時にNode.js 24で依存関係を復元し、lint、テスト、ビルド後に`dist`を公開します。PR用CIとは別の同時実行グループを使います。Viteの`base`は`/booth-navi/`のまま維持しています。
+
+### E2Eテスト
+
+Node.js 24で実行します。既存のVitestテストに加えて、PlaywrightのChromiumで8件のE2Eを実行します。
+
+```sh
+npm ci
+npx playwright install chromium
+npm test
+npm run lint
+npm run build
+npm run test:e2e
+```
+
+Linuxでブラウザのシステム依存も必要な場合は`npx playwright install --with-deps chromium`を使用します。`test:e2e`はE2Eコードをstrictで型チェックしてから、ビルド済みの`dist`をVite previewで配信します。先にビルドし、ポート4173を空けておいてください。サーバーはテスト終了時に停止します。
+
+- 検索 → 詳細 → お気に入り → 再読み込み後の維持
+- ブース追加 → マウスドラッグ → Undo（移動と追加の取り消し）
+- Aの編集 → Bへ切り替え → B側の編集をUndoしても両イベントを維持
+- 画像付きイベントを複製 → 複製先の参照削除 → 再読み込みした元イベントで画像のデコードを確認
+- JSONの構文エラー・スキーマエラーの各1件。正常な取り込み候補の後に不正ファイルを読み込み、上書き操作が残らず保存済みデータも変わらないことを確認
+- IME相当の`isComposing`・`keyCode: 229`の各1件。合成Enterでは選択せず、通常Enterでは選択することを確認
+
+各テストは独立したブラウザコンテキストを使い、localStorage・IndexedDBはモックしません。CIは1 worker、失敗時のみ1回再試行します。HTMLレポートは`npx playwright show-report`で確認できます。生成物の`playwright-report/`と`test-results/`はGitとlintの対象外です。
+
+対象はデスクトップChromiumです。Firefox・WebKit・モバイル・OSの実際の日本語IME操作は未検証です。また、画像なしマップでは既存の装飾背景要素が内側のクリックを受け取り、ブース追加に反応しません。このE2Eでは操作可能な外周の余白から追加します。内側の追加不具合の修正は今回の対象外です。
 
 ### 保存の完了と終了時の扱い（H5）
 
