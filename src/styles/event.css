@@ -1,0 +1,185 @@
+.app-shell {
+  color: var(--event-text);
+  background-color: var(--event-background);
+  background-size: cover;
+  background-attachment: fixed;
+  font-family: var(--event-font);
+}
+.app-shell .site-header,
+.app-shell .search-panel,
+.app-shell .map-card,
+.app-shell .detail-card,
+.app-shell .favorites-card,
+.editor-panel {
+  background-color: var(--event-surface);
+}
+.app-shell .eyebrow,
+.app-shell .intro h1 span,
+.app-shell .booth-big {
+  color: var(--event-primary);
+}
+.app-shell .genre,
+.app-shell .description,
+.app-shell .items article p,
+.app-shell .payment span {
+  color: var(--event-muted);
+}
+.app-shell .poster {
+  background: color-mix(
+    in srgb,
+    var(--event-surface) 86%,
+    var(--event-primary)
+  );
+}
+.app-shell .poster span,
+.app-shell .poster i {
+  color: var(--event-text);
+}
+.intro h1,
+h2,
+.items h3,
+.item-editor h3 {
+  font-family: Inter, "Noto Sans JP", system-ui, sans-serif;
+  letter-spacing: 0;
+}
+.genre,
+.description,
+.items article p,
+.payment span {
+  font-weight: 500;
+}
+.items-empty {
+  margin: 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  color: var(--event-muted, var(--muted));
+  font-size: 12px;
+  line-height: 1.6;
+}
+.payment span {
+  text-align: right;
+}
+.brand-button {
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.brand-logo {
+  width: 43px;
+  height: 43px;
+  object-fit: contain;
+  border-radius: 9px;
+}
+.mode-switch {
+  margin-left: auto;
+  display: flex;
+  padding: 4px;
+  background: #eceae4;
+  border-radius: 11px;
+}
+.mode-switch button {
+  min-height: 38px;
+  border: 0;
+  background: transparent;
+  border-radius: 8px;
+  padding: 0 14px;
+  font-weight: 800;
+  color: #65636b;
+  cursor: pointer;
+}
+.mode-switch button.active {
+  background: var(--event-primary);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+.save-status {
+  font-size: 11px;
+  white-space: nowrap;
+}
+.status-saving {
+  color: #9a6419;
+}
+.status-saved {
+  color: #397363;
+}
+.status-error {
+  color: #b23b3b;
+  font-weight: 800;
+}
+.event-switcher {
+  position: absolute;
+  z-index: 30;
+  top: 70px;
+  left: max(12px, calc((100vw - 1200px) / 2));
+  width: min(560px, calc(100vw - 24px));
+  padding: 12px;
+  background: var(--event-surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.2);
+}
+.event-switcher-list {
+  display: grid;
+  max-height: 300px;
+  overflow: auto;
+}
+.event-switcher-list button {
+  padding: 11px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  border-radius: 9px;
+  cursor: pointer;
+}
+.event-switcher-list button.active {
+  background: color-mix(in srgb, var(--event-primary) 14%, transparent);
+}
+.event-switcher-list small {
+  display: block;
+  color: var(--event-muted);
+  margin-top: 3px;
+}
+.event-switcher-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.event-switcher-actions button,
+.editor-actions button,
+.editor-panel button,
+.import-box button {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--event-surface);
+  color: inherit;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.event-switcher-actions button:nth-last-child(2),
+.danger-link {
+  color: #ad3838;
+}
+.intro.has-hero {
+  max-width: none;
+  padding: clamp(26px, 5vw, 60px);
+  border-radius: 20px;
+  background-size: cover;
+  background-position: center;
+  color: white;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+}
+.intro.has-hero .eyebrow,
+.intro.has-hero > p:last-child {
+  color: white;
+}
+.empty-event {
+  padding: 50px;
+  text-align: center;
+  background: var(--event-surface);
+  border-radius: 18px;
+}
