@@ -54,13 +54,11 @@ export function useEventProjects() {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved')
   const initialized = useRef(false)
   // Keep the exact snapshot this tab last read/wrote; unrelated tabs never update it.
-  const lastSaved = useRef<string | null>(null)
+  const [initialSnapshot] = useState<string | null>(() => {
+    try { return localStorage.getItem(PROJECTS_KEY) } catch { return null }
+  })
+  const lastSaved = useRef(initialSnapshot)
   const conflict = useRef(false)
-  const snapshotInitialized = useRef(false)
-  if (!snapshotInitialized.current) {
-    try { lastSaved.current = localStorage.getItem(PROJECTS_KEY) } catch { /* Save attempts will show an error. */ }
-    snapshotInitialized.current = true
-  }
   const current = projects.find((project) => project.id === currentId) ?? projects[0]
 
   const pending = useRef<{ projects: EventProject[]; currentId: string } | null>(null)
