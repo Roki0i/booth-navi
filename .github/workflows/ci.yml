@@ -28,6 +28,8 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      - name: Smoke-check current public site before merge
+        run: node e2e/live_site_smoke.mjs
       - name: Upload E2E report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
@@ -36,5 +38,6 @@ jobs:
           path: |
             playwright-report/
             test-results/
+            screenshots/
           retention-days: 7
           if-no-files-found: ignore
