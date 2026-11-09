@@ -4,6 +4,20 @@
 
 [会場マップを開く](https://roki0i.github.io/booth-navi/)
 
+## ポートフォリオ概要
+
+会場マップ画像とサークル・頒布物情報をまとめ、来場者が**検索→位置確認→お気に入り・訪問済み管理**まで行えるアプリです。編集モードでは、主催者・サークル側がイベントやブースの配置を作成できます。デモの24ブースは架空のデータです。
+
+| 観点 | 開発で取り組んだこと |
+| --- | --- |
+| 技術 | React / TypeScript / Vite / Tailwind CSS。SVGの会場マップとドラッグ編集 |
+| データ | イベント・ブースはブラウザ保存、画像はIndexedDB。CSV一括読込、画像付きJSONバックアップに対応 |
+| データ保護 | 不正CSVの部分取り込みを防止し、別タブの変更を検出したら自動保存を停止 |
+| 品質 | Vitest / ESLint / TypeScript / Playwright。検索、移動とUndo、画像移行、複数タブ編集を回帰テスト |
+| 制約 | 共同編集・サーバー同期には未対応。別タブによる同時書き込みの完全排他制御は未実装 |
+
+[公開画面とスクリーンショット（GitHub Actionsの成果物）](https://github.com/Roki0i/booth-navi/actions/workflows/deploy-pages.yml) · [CI・E2E検証結果](https://github.com/Roki0i/booth-navi/actions/workflows/ci.yml)
+
 ## 会場マップを使う
 
 サンプルには架空のブースが24件あります。ブース番号、サークル名、頒布物名のいずれかで検索し、結果を選ぶと場所と詳細を確認できます。お気に入りと訪問済みはイベントごとに保存されます。
