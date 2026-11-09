@@ -35,7 +35,7 @@ test('image-inclusive JSON transfers a logo into a clean browser context', async
       name: 'event-images.json', mimeType: 'application/json',
       buffer: Buffer.from(JSON.stringify(document), 'utf8'),
     })
-    await expect(importer.getByText(/画像付き/)).toBeVisible()
+    await expect(importer.locator('.import-preview')).toContainText('画像付き')
     other.once('dialog', dialog => dialog.accept())
     await importer.getByRole('button', { name: '新しいイベントとして追加' }).click()
     await expect(other.locator('img.brand-logo')).toBeVisible()
