@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createSampleEvent, SAMPLE_EVENT_ID } from '../data/sampleEvents'
 import { EVENT_SCHEMA_VERSION, type EventProject } from '../types/event'
-import { loadLastProjectId, loadProjects, saveLastProjectId, saveProjects } from '../storage/eventStorage'
+import { PROJECTS_KEY, loadLastProjectId, loadProjects, saveLastProjectId, saveProjects } from '../storage/eventStorage'
 
-export type SaveStatus = 'saved' | 'saving' | 'error'
+export type SaveStatus = 'saved' | 'saving' | 'error' | 'conflict'
 
 export function createBlankProject(): EventProject {
   const now = new Date().toISOString()
@@ -53,13 +53,27 @@ export function useEventProjects() {
   })
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved')
   const initialized = useRef(false)
+  // Keep the exact snapshot this tab last read/wrote; unrelated tabs never update it.
+  const [initialSnapshot] = useState<string | null>(() => {
+    try { return localStorage.getItem(PROJECTS_KEY) } catch { return null }
+  })
+  const lastSaved = useRef(initialSnapshot)
+  const conflict = useRef(false)
   const current = projects.find((project) => project.id === currentId) ?? projects[0]
 
   const pending = useRef<{ projects: EventProject[]; currentId: string } | null>(null)
   const flush = useCallback((notify = true) => {
-    if (!pending.current) return
+    if (!pending.current || conflict.current) return
     try {
+      // Fail closed: never overwrite changes another tab made since this snapshot.
+      if (localStorage.getItem(PROJECTS_KEY) !== lastSaved.current) {
+        conflict.current = true
+        if (notify) setSaveStatus('conflict')
+        return
+      }
+      const savedText = JSON.stringify(pending.current.projects)
       saveProjects(pending.current.projects)
+      lastSaved.current = savedText
       saveLastProjectId(pending.current.currentId)
       pending.current = null
       if (notify) setSaveStatus('saved')
@@ -72,18 +86,27 @@ export function useEventProjects() {
   useLayoutEffect(() => {
     if (!initialized.current) { initialized.current = true; return }
     pending.current = { projects, currentId }
+    if (conflict.current) { setSaveStatus('conflict'); return }
     setSaveStatus('saving')
     const timer = window.setTimeout(() => flush(), 250)
     return () => window.clearTimeout(timer)
   }, [projects, currentId, flush])
 
   useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.storageArea !== localStorage || (event.key !== PROJECTS_KEY && event.key !== null)) return
+      if (event.newValue === lastSaved.current) return
+      conflict.current = true
+      setSaveStatus('conflict')
+    }
+    window.addEventListener('storage', onStorage)
     const onHide = () => flush()
     const onVisibility = () => { if (document.visibilityState === 'hidden') flush() }
     window.addEventListener('pagehide', onHide)
     window.addEventListener('beforeunload', onHide)
     document.addEventListener('visibilitychange', onVisibility)
     return () => {
+      window.removeEventListener('storage', onStorage)
       window.removeEventListener('pagehide', onHide)
       window.removeEventListener('beforeunload', onHide)
       document.removeEventListener('visibilitychange', onVisibility)

@@ -14,6 +14,7 @@ import { useUiTheme } from './hooks/useUiTheme'
 import type { AppMode } from './types/editor'
 import type { Booth } from './types/booth'
 import { themeToCssVariables } from './utils/eventValidation'
+import { downloadText, exportProject, projectFileName } from './utils/projectImportExport'
 import { closeViewerSheet, selectViewerBooth } from './utils/viewerSelection'
 
 export default function App() {
@@ -63,12 +64,17 @@ export default function App() {
           <button type="button" className={mode === 'view' ? 'active' : ''} onClick={() => setMode('view')}>閲覧モード</button>
           <button type="button" className={mode === 'edit' ? 'active' : ''} onClick={() => setMode('edit')}>編集モード</button>
         </div>
-        <span className={`save-status status-${manager.saveStatus}`} aria-live="polite">{manager.saveStatus === 'saving' ? '保存中…' : manager.saveStatus === 'saved' ? '保存しました' : '保存できませんでした'}</span>
+        <span className={`save-status status-${manager.saveStatus}`} aria-live="polite">{manager.saveStatus === 'saving' ? '保存中…' : manager.saveStatus === 'saved' ? '保存しました' : manager.saveStatus === 'conflict' ? '他タブで更新されました' : '保存できませんでした'}</span>
         {mode === 'view' && <dl className="stats"><div><dt>ブース</dt><dd>{project.booths.length}</dd></div><div><dt>お気に入り</dt><dd>{favorites.ids.length}</dd></div><div><dt>訪問済み</dt><dd>{visited.ids.length}</dd></div></dl>}
       </div>
       {showEvents && <div className="event-switcher">
         <div className="event-switcher-list">{manager.projects.map((event) => <button key={event.id} type="button" className={event.id === project.id ? 'active' : ''} onClick={() => { manager.setCurrentId(event.id); setShowEvents(false) }}><strong>{event.name}</strong><small>{event.date} · {event.venue || '会場未設定'}</small></button>)}</div>
         <div className="event-switcher-actions"><button type="button" onClick={() => { manager.add(); setShowEvents(false) }}>新規作成</button><button type="button" onClick={() => { manager.duplicate(); setShowEvents(false) }}>複製</button><button type="button" onClick={() => { if (confirm(`「${project.name}」を削除しますか？`)) manager.remove(project.id) }}>削除</button><button type="button" onClick={() => { if (confirm('サンプルイベントを初期状態へ戻しますか？')) manager.resetSample() }}>サンプルへリセット</button></div>
+      </div>}
+      {manager.saveStatus === 'conflict' && <div role="alert" className="storage-conflict">
+        <p>別のタブでイベントが更新されました。このタブからの自動保存を停止しました。現在のイベントをJSONで控えてから再読み込みしてください。</p>
+        <button type="button" onClick={() => downloadText(exportProject(project), projectFileName(project.name), 'application/json')}>このタブのイベントをJSONで保存</button>
+        <button type="button" onClick={() => { if (confirm('このタブの未保存の変更は失われます。最新のイベントを読み込みますか？')) window.location.reload() }}>他タブの変更を読み込む</button>
       </div>}
       {(favorites.saveStatus === 'error' || visited.saveStatus === 'error') && <p role="alert">お気に入り・訪問済みを保存できませんでした。状態は変更していません。もう一度操作してください。</p>}
     </header>
